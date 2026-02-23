@@ -1,52 +1,57 @@
-```markdown
-## Estructura del proyecto
-
-Se crean los siguientes directorios y archivos:
-
-```bash
-mkdir data
-mkdir data/raw
-mkdir data/processed
-mkdir notebooks
-mkdir src
-ni main.py
-ni README.md
-ni requirements.txt
-```
-
-- `data/raw`: Datos originales sin procesar.
-- `data/processed`: Datos procesados y listos para análisis.
-- `notebooks`: Notebooks para exploración y visualización.
-- `src`: Código fuente del proyecto.
-- `main.py`: Script principal.
-- `README.md`: Documentación del proyecto.
-- `requirements.txt`: Dependencias del proyecto.
-```
-
-# Proyecto: Análisis de Cancelaciones Hotel
+# Proyecto: Análisis de cancelaciones hoteleras
 
 ## Objetivo
-Analizar factores asociados a la cancelación de reservas hoteleras utilizando un enfoque de exploración de datos, limpieza estructurada y generación de nuevas variables.
+Analizar qué variables se asocian con la cancelación de reservas hoteleras y construir un EDA reproducible que permita extraer conclusiones accionables.
 
 ## Dataset
-Hotel Booking Dataset (Kaggle)
+- **Nombre**: Hotel Booking Demand Dataset.
+- **Origen**: Kaggle.
+- **Enlace**: https://www.kaggle.com/datasets/jessemostipak/hotel-booking-demand
+- **Archivo usado**: `data/raw/hotel_bookings.csv`.
 
-El dataset contiene información sobre reservas hoteleras, incluyendo tipo de hotel, antelación de la reserva (lead_time), segmento de mercado, ADR y estado de cancelación.
+## Preguntas de análisis
+1. ¿Qué tipo de hotel presenta mayor tasa de cancelación?
+2. ¿Influye la antelación de reserva (`lead_time`) en la probabilidad de cancelar?
+3. ¿Existe estacionalidad en las cancelaciones?
+4. ¿Qué segmentos de mercado concentran más cancelaciones?
 
-## Pipeline del Proyecto
-El proyecto sigue un flujo reproducible definido en `main.py`:
+## Estructura del proyecto
+- `main.py`: pipeline reproducible (load → clean → features → export → viz).
+- `notebooks/eda.ipynb`: EDA narrado y visualizaciones.
+- `src/data_utils.py`: carga, limpieza y creación de features.
+- `src/utils.py`: validaciones simples (por ejemplo `assert_columns`).
+- `src/viz.py`: funciones de visualización reutilizables.
+- `src/config.py`: rutas de entrada/salida.
+- `data/raw/`: datos originales.
+- `data/processed/`: dataset limpio y salidas de pipeline.
 
-1. Carga de datos desde `data/raw/`
-2. Limpieza de datos:
-   - Eliminación de outliers evidentes en ADR (ADR < 0 y ADR > 1000)
-   - Conversión de `reservation_status_date` a formato datetime
-3. Creación de nuevas features:
-   - `total_nights` = `stays_in_weekend_nights` + `stays_in_week_nights`
-   - `total_guests` = `adults` + `children` + `babies` (con `children` imputado a 0 si falta)
-   - `lead_time_category` (short/medium/long)
-4. Exportación del dataset limpio a `data/processed/clean_dataset.csv`
+## Pipeline reproducible
+1. Cargar CSV con validación de esquema mínima.
+2. Limpiar datos:
+   - Filtrado de outliers de `adr` (0 a 1000).
+   - Conversión robusta de `reservation_status_date` a datetime.
+   - Imputación de `children` con 0 cuando hay nulos.
+3. Crear features:
+   - `total_nights`.
+   - `total_guests`.
+   - `lead_time_category` (short/medium/long).
+4. Exportar `data/processed/clean_dataset.csv`.
+5. Exportar gráfico `data/processed/cancellation_rate_by_hotel.png`.
 
-Para ejecutar el pipeline completo:
-
+## Ejecución
 ```bash
+python -m venv .venv
+source .venv/bin/activate  # En Windows: .venv\Scripts\activate
+pip install -r requirements.txt
 python main.py
+```
+
+## Hallazgos (EDA)
+1. **City Hotel** presenta mayor tasa de cancelación que **Resort Hotel**.
+2. Las reservas con mayor `lead_time` muestran mayor probabilidad de cancelación.
+3. Existen diferencias de cancelación por mes y por `market_segment`, con segmentos de muestra pequeña que requieren cautela al interpretar porcentajes.
+
+## Estado de entrega
+- Notebook ejecutable con rutas relativas.
+- Código modular en `src/` con funciones reutilizables.
+- Validaciones básicas incluidas en `src/utils.py`.
